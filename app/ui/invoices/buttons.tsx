@@ -1,6 +1,11 @@
+"use client";
+
 import { deleteInvoice } from "@/app/lib/actions";
 import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { useFormStatus } from "react-dom";
+import { Button } from "../button";
+import { ComponentProps } from "react";
 
 export function CreateInvoice() {
   return (
@@ -35,3 +40,26 @@ export function DeleteInvoice({ id }: { id: string }) {
     </form>
   );
 }
+
+export const ButtonSubmit = ({
+  children,
+  className,
+  pendingText = "Processing ...",
+  ...rest
+}: {
+  children: React.ReactNode;
+  className?: string;
+  pendingText?: string;
+} & ComponentProps<"button">) => {
+  const { pending } = useFormStatus();
+  return (
+    <Button
+      {...rest}
+      className={`${className}`}
+      disabled={pending}
+      aria-disabled={pending}
+    >
+      {pending ? pendingText : children}
+    </Button>
+  );
+};

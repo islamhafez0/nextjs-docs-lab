@@ -163,6 +163,53 @@ export function InvoicesMobileSkeleton() {
   );
 }
 
+export function CreateFormSkeleton() {
+  return (
+    <div className={`${shimmer} relative overflow-hidden`}>
+      <div className="rounded-md bg-gray-50 p-4 md:p-6">
+        {/* Customer Name */}
+        <div className="mb-4">
+          <div className="mb-2 h-5 w-32 rounded bg-gray-200" />
+          <div className="relative">
+            <div className="h-10 w-full rounded-md bg-gray-200" />
+          </div>
+        </div>
+
+        {/* Invoice Amount */}
+        <div className="mb-4">
+          <div className="mb-2 h-5 w-36 rounded bg-gray-200" />
+          <div className="relative mt-2 rounded-md">
+            <div className="h-10 w-full rounded-md bg-gray-200" />
+          </div>
+        </div>
+
+        {/* Invoice Status */}
+        <div>
+          <div className="mb-2 h-5 w-40 rounded bg-gray-200" />
+          <div className="rounded-md border border-gray-200 bg-white px-[14px] py-3">
+            <div className="flex gap-4">
+              <div className="flex items-center">
+                <div className="h-4 w-4 rounded-full bg-gray-200" />
+                <div className="ml-2 h-7 w-20 rounded-full bg-gray-200" />
+              </div>
+              <div className="flex items-center">
+                <div className="h-4 w-4 rounded-full bg-gray-200" />
+                <div className="ml-2 h-7 w-16 rounded-full bg-gray-200" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Buttons */}
+      <div className="mt-6 flex justify-end gap-4">
+        <div className="h-10 w-20 rounded-lg bg-gray-200" />
+        <div className="h-10 w-32 rounded-lg bg-gray-200" />
+      </div>
+    </div>
+  );
+}
+
 export function InvoicesTableSkeleton() {
   return (
     <div className="mt-6 flow-root">
