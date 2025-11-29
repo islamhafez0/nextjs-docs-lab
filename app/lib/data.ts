@@ -6,6 +6,8 @@ import {
   InvoicesTable,
   LatestInvoiceRaw,
   Revenue,
+  TeamMember,
+  Role,
 } from "./definitions";
 import { formatCurrency } from "./utils";
 
@@ -206,5 +208,36 @@ export async function fetchFilteredCustomers(query: string) {
   } catch (err) {
     console.error("Database Error:", err);
     throw new Error("Failed to fetch customer table.");
+  }
+}
+
+export async function fetchTeamMembers() {
+  try {
+    const members = await sql<TeamMember[]>`
+      SELECT u.id, u.name, u.email, u.role_id, r.name as role_name
+      FROM users u
+      LEFT JOIN roles r ON u.role_id = r.id
+      ORDER BY
+        CASE WHEN r.name = 'admin' THEN 0 ELSE 1 END,
+        u.name ASC
+    `;
+    return members;
+  } catch (err) {
+    console.error("Database Error:", err);
+    throw new Error("Failed to fetch team members.");
+  }
+}
+
+export async function fetchRoles() {
+  try {
+    const roles = await sql<Role[]>`
+      SELECT id, name, description
+      FROM roles
+      ORDER BY name ASC
+    `;
+    return roles;
+  } catch (err) {
+    console.error("Database Error:", err);
+    throw new Error("Failed to fetch roles.");
   }
 }

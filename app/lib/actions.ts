@@ -150,4 +150,88 @@ export type State = {
   message?: string | null;
 };
 
-export { createInvoice, editInvoice, deleteInvoice };
+// Team Management
+export type TeamState = {
+  errors?: {
+    name?: string[];
+    email?: string[];
+    role_id?: string[];
+  };
+  message?: string | null;
+};
+
+const AddMemberSchema = z.object({
+  name: z.string().min(1, { message: "Please enter a name." }),
+  email: z.string().email({ message: "Please enter a valid email." }),
+  role_id: z.string().min(1, { message: "Please select a role." }),
+});
+
+async function addTeamMember(prevState: TeamState, formData: FormData) {
+  const validatedFields = AddMemberSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    role_id: formData.get("role_id"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Invalid fields. Failed to add member.",
+    };
+  }
+
+  const { name, email, role_id } = validatedFields.data;
+
+  try {
+    // Check if user already exists
+    const existingUser = await sql`
+      SELECT id FROM users WHERE email = ${email}
+    `;
+
+    if (existingUser.length > 0) {
+      return {
+        message: "A user with this email already exists.",
+      };
+    }
+
+    // Create user without password (will be set on first sign-in)
+    await sql`
+      INSERT INTO users (name, email, password, role_id)
+      VALUES (${name}, ${email}, '', ${role_id})
+    `;
+  } catch (error) {
+    console.error(error);
+    return {
+      message: "Database Error: Failed to add team member.",
+    };
+  }
+
+  revalidatePath("/dashboard/team");
+  redirect("/dashboard/team");
+}
+
+async function updateUserRole(id: string, role_id: string) {
+  try {
+    await sql`
+      UPDATE users SET role_id = ${role_id} WHERE id = ${id}
+    `;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Database Error: Failed to update role.");
+  }
+  revalidatePath("/dashboard/team");
+}
+
+async function removeTeamMember(id: string) {
+  try {
+    await sql`
+      DELETE FROM users WHERE id = ${id}
+    `;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Database Error: Failed to remove team member.");
+  }
+  revalidatePath("/dashboard/team");
+}
+
+export { createInvoice, editInvoice, deleteInvoice, addTeamMember, updateUserRole, removeTeamMember };

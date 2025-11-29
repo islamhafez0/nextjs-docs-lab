@@ -9,6 +9,20 @@ export type User = {
   password: string;
 };
 
+export type Role = {
+  id: string;
+  name: string;
+  description: string | null;
+};
+
+export type TeamMember = {
+  id: string;
+  name: string;
+  email: string;
+  role_id: string | null;
+  role_name: string | null;
+};
+
 export type Customer = {
   id: string;
   name: string;

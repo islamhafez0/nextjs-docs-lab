@@ -11,7 +11,8 @@ async function seedUsers() {
       id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
       email TEXT NOT NULL UNIQUE,
-      password TEXT NOT NULL
+      password TEXT NOT NULL,
+      role VARCHAR(20) DEFAULT 'member'
     );
   `;
 
@@ -19,14 +20,44 @@ async function seedUsers() {
     users.map(async (user) => {
       const hashedPassword = await bcrypt.hash(user.password, 10);
       return sql`
-        INSERT INTO users (id, name, email, password)
-        VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
+        INSERT INTO users (id, name, email, password, role)
+        VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword}, 'admin')
         ON CONFLICT (id) DO NOTHING;
       `;
     })
   );
 
   return insertedUsers;
+}
+
+async function seedRoles() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS roles (
+      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+      name VARCHAR(50) NOT NULL UNIQUE,
+      description VARCHAR(255)
+    )
+  `;
+
+  await sql`
+    INSERT INTO roles (name, description)
+    VALUES
+      ('admin', 'Full access to all features'),
+      ('member', 'Basic access to dashboard')
+    ON CONFLICT (name) DO NOTHING
+  `;
+
+  await sql`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS role_id UUID REFERENCES roles(id)
+  `;
+
+  await sql`
+    UPDATE users
+    SET role_id = (SELECT id FROM roles WHERE name = 'admin')
+    WHERE id = (SELECT id FROM users ORDER BY id LIMIT 1)
+      AND role_id IS NULL
+  `;
 }
 
 async function seedInvoices() {
@@ -103,12 +134,7 @@ async function seedRevenue() {
 
 export async function GET() {
   try {
-    const result = await sql.begin((sql) => [
-      seedUsers(),
-      seedCustomers(),
-      seedInvoices(),
-      seedRevenue(),
-    ]);
+    await seedRoles();
 
     return Response.json({ message: "Database seeded successfully" });
   } catch (error) {
